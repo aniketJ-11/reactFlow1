@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -13,11 +13,14 @@ import { RootState } from "../redux/store";
 import { setNodes, setEdges } from "../redux/reducers/graphSlice";
 import "reactflow/dist/style.css";
 import NodeCustomizationPanel from "./NodeCustomizationPanel";
-import throttle from "lodash.throttle";
+import { saveState } from "../redux/reducers/historySlice";
 
 const GraphContainer: React.FC = () => {
   const dispatch = useDispatch();
-  const { nodes, edges } = useSelector((state: RootState) => state.graph);
+  const { nodes, edges } = useSelector(
+    (state: RootState) => state.history.present
+  );
+
   const { colors, fontSizes } = useSelector(
     (state: RootState) => state.nodeStyle
   );
@@ -71,7 +74,11 @@ const GraphContainer: React.FC = () => {
 
       <div style={{ width: "30%", padding: "10px", border: "1px solid black" }}>
         {selectedNodeId ? (
-          <NodeCustomizationPanel nodeId={selectedNodeId} />
+          <NodeCustomizationPanel
+            nodeId={selectedNodeId}
+            nodes={nodes}
+            edges={edges}
+          />
         ) : (
           <p>Select a node to customize</p>
         )}

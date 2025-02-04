@@ -4,6 +4,7 @@ import { store } from "./redux/store";
 import GraphContainer from "./components/GraphContainer";
 import UndoRedoControls from "./components/UndoRedoControls";
 import { setNodes, setEdges } from "./redux/reducers/graphSlice";
+import { saveState } from "./redux/reducers/historySlice";
 
 const App: React.FC = () => {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ const App: React.FC = () => {
 
     dispatch(setNodes(nodes));
     dispatch(setEdges(edges));
+    dispatch(saveState({ nodes, edges }));
   }, [dispatch]);
 
   return (

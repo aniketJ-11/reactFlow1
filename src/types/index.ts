@@ -22,4 +22,6 @@ export interface HistoryState {
 
 export interface NodeCustomizationPanelProps {
   nodeId: string;
+  nodes: Node[];
+  edges: Edge[];
 }
