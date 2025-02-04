@@ -1,25 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { initialNodes } from "../../utils/nodePositions";
 import { Node } from "reactflow";
+import { initialNodes } from "../../utils/nodePositions";
 
 const graphSlice = createSlice({
   name: "graph",
   initialState: { nodes: initialNodes },
   reducers: {
     updateNode(state, action: PayloadAction<Node>) {
-      const index = state.nodes.findIndex((n) => n.id === action.payload.id);
-      if (index !== -1) {
-        state.nodes[index] = action.payload;
-      }
+      state.nodes = state.nodes.map((node) =>
+        node.id === action.payload.id ? { ...node, ...action.payload } : node
+      );
     },
+
     updateNodePosition(
       state,
       action: PayloadAction<{ id: string; position: { x: number; y: number } }>
     ) {
-      const { id, position } = action.payload;
-      const node = state.nodes.find((n) => n.id === id);
+      const node = state.nodes.find((n) => n.id === action.payload.id);
       if (node) {
-        node.position = position;
+        node.position = action.payload.position;
       }
     },
   },

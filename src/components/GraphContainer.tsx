@@ -15,14 +15,13 @@ import { useCallback, useEffect, useState } from "react";
 import "reactflow/dist/style.css";
 
 import NodeCustomizationPanel from "./NodeCustomizationPanel";
-import { initializeState } from "../redux/reducers/historySlice";
-import { updateNodePosition } from "../redux/reducers/graphSlice";
+import { initializeState, saveState } from "../redux/reducers/historySlice";
+
 
 const GraphContainer = () => {
   const dispatch = useDispatch();
   const initialEdges: Edge[] = [];
   const initialNodes = useSelector((state: RootState) => state.graph.nodes);
-  console.log(initialNodes);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -32,6 +31,13 @@ const GraphContainer = () => {
     dispatch(initializeState(initialNodes));
     setNodes(initialNodes);
   }, [dispatch, initialNodes]);
+
+  // Save state whenever nodes update
+  useEffect(() => {
+    if (nodes.length > 0) {
+      dispatch(saveState(nodes));
+    }
+  }, [nodes, dispatch]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -45,6 +51,7 @@ const GraphContainer = () => {
     },
     [edges]
   );
+
   const onNodeClick: NodeMouseHandler = useCallback((event, node) => {
     setSelectedNodeId(node.id);
   }, []);
@@ -61,7 +68,15 @@ const GraphContainer = () => {
             },
           }))}
           edges={edges}
-          onNodesChange={onNodesChange}
+          // onNodesChange={(changes) => {
+          //   onNodesChange(changes);
+          //   setNodes((prevNodes) =>
+          //     prevNodes.map((node) => {
+          //       const change = changes.find((c) => c.type === node.id);
+          //       return change ? { ...node, ...change } : node;
+          //     })
+          //   );
+          // }} initial state history redus se lena h uske present se and wahi changes hone chahiya
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
