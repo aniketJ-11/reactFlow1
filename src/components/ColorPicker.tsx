@@ -1,29 +1,30 @@
-import { SketchPicker } from "react-color";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../redux/store";
-import { updateNode } from "../redux/reducers/graphSlice";
+import React, { useState, useCallback } from "react";
+import { useDispatch } from "react-redux";
+import { setNodeColor } from "../redux/reducers/nodeStyleReducer";
+import throttle from "lodash.throttle";
 
 const ColorPicker = ({ nodeId }: { nodeId: string }) => {
+  const [color, setColor] = useState("#000000");
   const dispatch = useDispatch();
-  const node = useSelector((state: RootState) =>
-    state.graph.nodes.find((n) => n.id === nodeId)
+
+  const throttledDispatch = useCallback(
+    throttle((color: string) => {
+      dispatch(setNodeColor({ id: nodeId, color }));
+    }, 300),
+    [dispatch, nodeId]
   );
 
-  if (!node) return null;
-
-  const handleChange = (color: any) => {
-    dispatch(
-      updateNode({
-        ...node,
-        data: {
-          ...node.data,
-          color: color.hex,
-        },
-      })
-    );
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setColor(e.target.value);
+    throttledDispatch(e.target.value);
   };
 
-  return <SketchPicker color={node.data.color} onChange={handleChange} />;
+  return (
+    <div>
+      <label>Pick Color:</label>
+      <input type="color" value={color} onChange={handleColorChange} />
+    </div>
+  );
 };
 
 export default ColorPicker;

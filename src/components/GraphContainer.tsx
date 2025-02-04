@@ -1,55 +1,40 @@
+import React, { useCallback, useState } from "react";
 import ReactFlow, {
-  MiniMap,
-  Controls,
   Background,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  Edge,
-  Connection,
+  Controls,
+  applyNodeChanges,
+  applyEdgeChanges,
+  NodeChange,
+  EdgeChange,
   NodeMouseHandler,
 } from "reactflow";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { useCallback, useEffect, useState } from "react";
+import { setNodes, setEdges } from "../redux/reducers/graphSlice";
 import "reactflow/dist/style.css";
-
 import NodeCustomizationPanel from "./NodeCustomizationPanel";
-import { initializeState, saveState } from "../redux/reducers/historySlice";
+import throttle from "lodash.throttle";
 
-
-const GraphContainer = () => {
+const GraphContainer: React.FC = () => {
   const dispatch = useDispatch();
-  const initialEdges: Edge[] = [];
-  const initialNodes = useSelector((state: RootState) => state.graph.nodes);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const { nodes, edges } = useSelector((state: RootState) => state.graph);
+  const { colors, fontSizes } = useSelector(
+    (state: RootState) => state.nodeStyle
+  );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
-  useEffect(() => {
-    dispatch(initializeState(initialNodes));
-    setNodes(initialNodes);
-  }, [dispatch, initialNodes]);
-
-  // Save state whenever nodes update
-  useEffect(() => {
-    if (nodes.length > 0) {
-      dispatch(saveState(nodes));
-    }
-  }, [nodes, dispatch]);
-
-  const onConnect = useCallback(
-    (connection: Connection) => {
-      const edge = {
-        ...connection,
-        animated: true,
-        id: `${edges.length + 1}`,
-        type: "customEdge",
-      };
-      setEdges((prevEdges) => addEdge(edge, prevEdges));
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      dispatch(setNodes(applyNodeChanges(changes, nodes)));
     },
-    [edges]
+    [dispatch, nodes]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      dispatch(setEdges(applyEdgeChanges(changes, edges)));
+    },
+    [dispatch, edges]
   );
 
   const onNodeClick: NodeMouseHandler = useCallback((event, node) => {
@@ -57,36 +42,32 @@ const GraphContainer = () => {
   }, []);
 
   return (
-    <div style={{ display: "flex", gap: "20px" }}>
-      <div style={{ width: "70%", height: "500px", border: "1px solid black" }}>
-        <ReactFlow
-          nodes={nodes.map((node) => ({
-            ...node,
-            style: {
-              backgroundColor: node.data.color,
-              fontSize: node.data.fontSize,
-            },
-          }))}
-          edges={edges}
-          // onNodesChange={(changes) => {
-          //   onNodesChange(changes);
-          //   setNodes((prevNodes) =>
-          //     prevNodes.map((node) => {
-          //       const change = changes.find((c) => c.type === node.id);
-          //       return change ? { ...node, ...change } : node;
-          //     })
-          //   );
-          // }} initial state history redus se lena h uske present se and wahi changes hone chahiya
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          fitView
-        >
-          <MiniMap nodeColor={(node) => node.data.color || "#aa1fff"} />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
+    <div style={{ width: "100%", height: "500px" }}>
+      <ReactFlow
+        nodes={nodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            color: colors[node.id] || node.data.color,
+            fontSize: fontSizes[node.id] || node.data.fontSize,
+          },
+          style: {
+            backgroundColor: colors[node.id] || node.data.color,
+            fontSize: `${fontSizes[node.id] || node.data.fontSize}px`,
+            padding: "10px",
+            borderRadius: "5px",
+            color: "#fff",
+            textAlign: "center",
+          },
+        }))}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+      >
+        <Background />
+        <Controls />
+      </ReactFlow>
 
       <div style={{ width: "30%", padding: "10px", border: "1px solid black" }}>
         {selectedNodeId ? (

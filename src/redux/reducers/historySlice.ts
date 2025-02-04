@@ -1,15 +1,20 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Node } from "reactflow";
+import { Node, Edge } from "../../types/index";
+
+interface Action {
+  type: string;
+  payload: any;
+}
 
 interface HistoryState {
-  past: Node[][];
-  present: Node[];
-  future: Node[][];
+  past: Action[];
+  present: { nodes: Node[]; edges: Edge[] };
+  future: Action[];
 }
 
 const initialState: HistoryState = {
   past: [],
-  present: [],
+  present: { nodes: [], edges: [] },
   future: [],
 };
 
@@ -17,33 +22,30 @@ const historySlice = createSlice({
   name: "history",
   initialState,
   reducers: {
-    initializeState(state, action: PayloadAction<Node[]>) {
-      state.present = action.payload;
-      state.past = [];
-      state.future = [];
-    },
-
-    saveState(state, action: PayloadAction<Node[]>) {
-      state.past.push([...state.present]);
+    saveState: (
+      state,
+      action: PayloadAction<{ nodes: Node[]; edges: Edge[] }>
+    ) => {
+      state.past.push({ type: "UPDATE", payload: state.present });
       state.present = action.payload;
       state.future = [];
     },
-
-    undo(state) {
+    undo: (state) => {
       if (state.past.length > 0) {
-        state.future.unshift([...state.present]);
-        state.present = state.past.pop()!;
+        const previousState = state.past.pop();
+        state.future.unshift({ type: "UPDATE", payload: state.present });
+        state.present = previousState?.payload || state.present;
       }
     },
-
-    redo(state) {
+    redo: (state) => {
       if (state.future.length > 0) {
-        state.past.push([...state.present]);
-        state.present = state.future.shift()!;
+        const nextState = state.future.shift();
+        state.past.push({ type: "UPDATE", payload: state.present });
+        state.present = nextState?.payload || state.present;
       }
     },
   },
 });
 
-export const { initializeState, saveState, undo, redo } = historySlice.actions;
+export const { saveState, undo, redo } = historySlice.actions;
 export default historySlice.reducer;

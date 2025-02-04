@@ -1,13 +1,11 @@
-export interface NodeData {
-  label: string;
-  color: string;
-  fontSize: number;
-}
-
 export interface Node {
   id: string;
   position: { x: number; y: number };
-  data: NodeData;
+  data: {
+    label: string;
+    color: string;
+    fontSize: number;
+  };
 }
 
 export interface Edge {
@@ -17,7 +15,11 @@ export interface Edge {
 }
 
 export interface HistoryState {
-  past: Node[][];
-  present: Node[];
-  future: Node[][];
+  past: any[];
+  present: { nodes: Node[]; edges: Edge[] };
+  future: any[];
+}
+
+export interface NodeCustomizationPanelProps {
+  nodeId: string;
 }
