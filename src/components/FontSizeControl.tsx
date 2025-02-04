@@ -1,11 +1,37 @@
 import { useDispatch } from "react-redux";
 import { setNodeFontSize } from "../redux/reducers/nodeStyleReducer";
+import { Node, Edge } from "../types";
+import { saveState } from "../redux/reducers/historySlice";
 
-const FontSizeControl = ({ nodeId }: { nodeId: string }) => {
+const FontSizeControl = ({
+  nodeId,
+  nodes,
+  edges,
+}: {
+  nodeId: string;
+  nodes: Node[];
+  edges: Edge[];
+}) => {
   const dispatch = useDispatch();
 
   const changeFontSize = (size: number) => {
-    dispatch(setNodeFontSize({ id: nodeId, fontSize: size }));
+    // dispatch(setNodeFontSize({ id: nodeId, fontSize: size }));
+
+    const newNodes = nodes.map((node) => {
+      if (node.id === nodeId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            fontSize: size,
+          },
+        };
+      }
+      return node;
+    });
+    console.log(newNodes);
+
+    dispatch(saveState({ nodes: newNodes, edges }));
   };
 
   return (

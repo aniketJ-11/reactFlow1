@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { setNodeColor } from "../redux/reducers/nodeStyleReducer";
 import throttle from "lodash.throttle";
 import { Node, Edge } from "../types";
 import { saveState } from "../redux/reducers/historySlice";
@@ -19,7 +18,6 @@ const ColorPicker = ({
 
   const throttledDispatch = useCallback(
     throttle((color: string) => {
-      // dispatch(setNodeColor({ id: nodeId, color }));
       const newNodes = nodes.map((node) => {
         if (node.id === nodeId) {
           return {

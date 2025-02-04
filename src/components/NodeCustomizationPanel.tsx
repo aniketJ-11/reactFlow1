@@ -11,7 +11,7 @@ const NodeCustomizationPanel: React.FC<NodeCustomizationPanelProps> = ({
     <div style={{ padding: "10px", border: "1px solid #ddd" }}>
       <h3>Node Customization</h3>
       <ColorPicker nodeId={nodeId} nodes={nodes} edges={edges} />
-      <FontSizeControl nodeId={nodeId} />
+      <FontSizeControl nodeId={nodeId} nodes={nodes} edges={edges} />
     </div>
   );
 };
